@@ -1,4 +1,4 @@
-name: lacework-iac-scan-pr
+name: lacework-iac-scan-test
 
 on:
 
