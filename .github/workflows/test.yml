@@ -70,9 +70,8 @@ jobs:
 
             # Run the Scan
 
-            docker run --env-file env.list -v "$(pwd):/app/src" lacework/codesec-iac:latest lacework iac scan
+            docker run --env-file env.list -v "$(pwd):/app/src"  -w /app/src lacework/codesec:stable lacework iac scan
 
-           
 
             # Copy the report outside lacework/codesec-iac:latest container
 
