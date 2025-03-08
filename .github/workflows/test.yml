@@ -20,6 +20,7 @@ permissions:
 
 jobs:
 
+
  Lacework-Scanner:
 
    runs-on: ubuntu-latest
@@ -30,8 +31,10 @@ jobs:
 
        uses: actions/checkout@v4
 
-     - name: Lacework IaC Scan
+     - name: Set up Docker
+       uses: docker/setup-docker-action@v4
 
+     - name: Lacework IaC Scan
        id: laceworkscan
 
        env:
@@ -52,7 +55,13 @@ jobs:
 
             echo "SCAN_COMMAND=tf-scan" >> env.list      # Configure the scanner to run Terraform Scan
 
-            echo "WORKSPACE=src" >> env.list            
+            echo "WORKSPACE=src" >> env.list    
+
+            echo "LW_ACCOUNT=${{ secrets.LW_ACCOUNT }}" >> env.list
+            
+            echo "LW_API_KEY=${{ secrets.LW_API_KEY }}" >> env.list
+            
+            echo "LW_API_SECRET=${{ secrets.LW_API_SECRET }}" >> env.list
 
             echo "EXIT_FLAG=critical" >> env.list      # Cause the pipline to fail if any Critical Vulnerabilities are discovered
 
@@ -64,9 +73,8 @@ jobs:
 
             # Run the Scan
 
-            docker run --env-file env.list -v "$(pwd):/app/src" lacework/codesec-iac:latest lacework iac scan
+            docker run --env-file env.list -v "$(pwd):/app/src"  -w /app/src lacework/codesec:stable lacework iac scan
 
-           
 
             # Copy the report outside lacework/codesec-iac:latest container
 
@@ -74,17 +82,17 @@ jobs:
 
             mkdir $IAC_REPORTS_DIR
 
-            docker container cp "$CONTAINER_ID:/tmp/lacework-report.json" $IAC_REPORTS_DIR
+            # docker container cp "$CONTAINER_ID:/tmp/lacework-report.json" $IAC_REPORTS_DIR
 
-            docker container cp "$CONTAINER_ID:/tmp/lacework-report.junit.xml" $IAC_REPORTS_DIR
+            # docker container cp "$CONTAINER_ID:/tmp/lacework-report.junit.xml" $IAC_REPORTS_DIR
 
 
 
             # Set GITHUB_ENV
 
-            RESULTS_JSON="$IAC_REPORTS_DIR/lacework-report.json"
+            # RESULTS_JSON="$IAC_REPORTS_DIR/lacework-report.json"
 
-            echo "RESULTS_JSON=$RESULTS_JSON" >> "$GITHUB_ENV"
+            # echo "RESULTS_JSON=$RESULTS_JSON" >> "$GITHUB_ENV"
 
       
 
